@@ -4,15 +4,19 @@ import tushare as ts
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
+'''
+从tushare获取源数据并保存为csv格式，涉及2016年3季度，4季度数据，以及行业和概念分类数据，后续使用industry.csv和concept.csv为筛选
+过的符合要求行业数据。
+'''
 df_list_20164 = ts.get_report_data(2016,3)
 df_list_20164.to_csv('20163.csv')
 df_list_20171 = ts.get_report_data(2016,4)
 df_list_20171.to_csv('20164.csv')
 df_list_industry = ts.get_industry_classified()
-df_list_industry.to_csv('industry.csv')
+df_list_industry.to_csv('industry1.csv')
 df_list_concept = ts.get_concept_classified()
-df_list_concept.to_csv('concept.csv')
-
+df_list_concept.to_csv('concept1.csv')
+#使用2016年3季度建立测试集，注意中文读取问题，使用code建立索引，操作请参考pandas的dataframe具体api。
 train1 = pd.read_csv('20163.csv',engine='python')
 train1_index = train1.set_index('code')
 
@@ -57,7 +61,10 @@ count = 0
 # array_train1 = np.array(list_train1).reshape(len(list_train1) // 2,2)
 # print("Finish1")
 # count = 0
-#建立第二个训练集，电子信息行业
+'''
+建立第二个训练集，电子信息行业，指标采用pe和roe,计算方式和定义请参考金融相关材料
+'''
+
 label2 = []
 list_train2 = []
 train2 = pd.read_csv('industry.csv',engine='python')
@@ -72,6 +79,7 @@ for i in train2['code']:
         continue
     first_price = df_price.iloc[0, 0]
     last_price = df_price.iloc[-1, 2]
+    #上涨及不变为1，下降为0
     if (last_price - first_price >= 0):
 
         change = 1
@@ -139,8 +147,10 @@ for i in train3['code']:
 
 array_train3 = np.array(list_train3).reshape(len(list_train3)//2,2)
 print('Finish3')
-#测试集选取行业分类电子信息与概念分类云计算的交集
-#存储三种方法分类的结果
+'''测试集选取行业分类电子信息与概念分类云计算的交集
+存储三种方法分类的结果
+从sklearn库调用knn相关算法
+'''
 result1 = []
 result2 = []
 result3 = []
